@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   LoadLessPokemon,
   LoadMorePokemon,
@@ -9,28 +9,31 @@ import { Footer, Header } from "../components/HeadFooter";
 import usePokemonData from "../hooks/usePokemonData ";
 
 const PokemonList = () => {
-  const [typeSelected, setTypeSelected] = useState("");
+  // console.log("Renderizando PokemonList"); // Adicione esta linha
   const { pokemonsFiltered, loadMorePokemons, selectType } = usePokemonData();
 
-  console.log(pokemonsFiltered.length > 0 ? pokemonsFiltered : pokemonsFiltered);
+  const handleFilerChange = useCallback(
+    (tipo) => {
+      selectType(tipo);
+    },
+    [selectType]
+  );
 
-  const handleFilerChange = (type) => {
-    selectType(type);
-    setTypeSelected(type);
-  };
+  //OLHA O CONSOLE
+  console.log("pokemonsFiltered", pokemonsFiltered);
 
   return (
     <>
       <Header />
       <main>
-        <TypesFilter value={typeSelected} onChange={handleFilerChange} />
-        {/* <List
+        <TypesFilter handleFilerChange={handleFilerChange}/> */}
+        <List
           pokemons={pokemonsFiltered.length > 0 ? pokemonsFiltered : pokemons}
-        /> */}
+        /> 
         <div>
           <LoadLessPokemon onClick={loadMorePokemons} />
           <LoadMorePokemon onClick={loadMorePokemons} />
-        </div>
+        </div> 
       </main>
       <Footer />
     </>
