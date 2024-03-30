@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { getPokemonUrl } from "../services/requestApi";
 import { getFilteredPokemon } from "../services/requestApi";
 import mapPokemonData from "../utils/mapPokemonData";
@@ -12,10 +12,12 @@ const usePokemonData = () => {
   const [typeSelected, setTypeSelected] = useState("");
   const [pokemonsFiltered, setPokemonsFiltered] = useState([]);
 
-  const fetchData = async (type, offset) => {
+  // console.log('usePokemonData chamado'); // Adicione esta linha
+
+  const fetchData = useCallback(async (type, offset) => {
     try {
       const pokemonData = type
-        ? await getFilteredPokemon(type)
+        ? await getFilteredPokemon(type, offset)
         : await getPokemonUrl(offset);
       // aqui uma dica para mapear um novo array de pokemons com as informações que você deseja, só modificar o mapPokemonData
       const newPokemon = mapPokemonData(pokemonData);
@@ -23,32 +25,45 @@ const usePokemonData = () => {
     } catch (error) {
       console.error("Erro ao buscar pokemons:", error);
     }
-  };
+  },[]);
 
   useEffect(() => {
+    let isActive = true;
+
+    // console.log('useEffect em usePokemonData chamado');
     fetchData(null, offset).then((newPokemon) => {
       setPokemons(newPokemon);
       setPokemonsFiltered(newPokemon);
       setDataLoaded(true);
     });
-  }, [offset]);
+    return () => {
+      isActive = false;
+    };
+  }, [fetchData, offset]);
 
-  const selectType = (type) => {
+  const selectType = useCallback((type) => {
+    // console.log('selectType chamado com', type);
     setTypeSelected(type);
-  };
+  }, []); // Dependências podem ser adicionadas se necessário
 
   useEffect(() => {
+    let isActive = true;
+
+    // console.log('useEffect com dependência de tipo em usePokemonData chamado');
     if (typeSelected === "") {
       setPokemonsFiltered(pokemons);
     } else {
-      fetchData(typeSelected).then((newPokemon) => {
+      fetchData(typeSelected, offset).then((newPokemon) => {
         setPokemonsFiltered(newPokemon);
         setDataLoaded(true);
       });
     }
-  }, [typeSelected, pokemons]);
+    return () => {
+      isActive = false;
+    };
+  }, [typeSelected, fetchData, offset]);
 
-  const loadMorePokemons = async () => {
+  const loadMorePokemons = useCallback(async () => {
     const newOffset = offset + 10;
     const newPokemon = await fetchData(typeSelected, newOffset);
     setPokemons((prevPokemons) => [...prevPokemons, ...newPokemon]);
@@ -57,7 +72,9 @@ const usePokemonData = () => {
       ...prevPokemonsFiltered,
       ...newPokemon,
     ]);
-  };
+  }, [typeSelected, offset, fetchData]); // Adicione as dependências necessárias aqui
+
+  
 
   return { pokemonsFiltered, loadMorePokemons, selectType };
 };
