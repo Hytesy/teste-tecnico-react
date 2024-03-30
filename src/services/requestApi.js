@@ -4,13 +4,15 @@ const BASE_URL = 'https://pokeapi.co/api/v2';
 
 async function fetchPokemonData(url) {
   try {
+
     const response = await axios.get(url);
     const { results } = response.data;
-
     const urlPokemon = results.map((result) => result.url);
 
     const pokemonData = await Promise.all(
-      urlPokemon.map((url) => fetchPokemonData(url).then((response) => response.data))
+      urlPokemon.map((url) =>
+        axios.get(url).then((response) => response.data)
+      )
     );
 
     return pokemonData;
@@ -50,17 +52,10 @@ async function getPokemonUrl(offset) {
     const response = await fetchPokemonData(
       `${BASE_URL}/pokemon/?limit=10&offset=${offset}`
     );
-    const { results } = response.data;
 
-    const urlPokemon = results.map((result) => result.url);
-
-    const pokemonData = await Promise.all(
-      urlPokemon.map((url) => fetchPokemonData(url).then((response) => response.data))
-    );
-
-    return pokemonData;
+    return response;
   } catch (error) {
-    console.error("Erro ao obter lista de URLs de Pokémon:", error);
+    console.error("Erro ao buscar pokemons:", error);
     return [];
   }
 }
@@ -101,24 +96,25 @@ async function getPokemonsPerType(type) {
 
 async function getTypes() {
   try {
-    const response = await fetchPokemonData(`${BASE_URL}/type`);
+    const response = await axios.get(`${BASE_URL}/type`);
     return response.data.results;
   } catch (error) {
     console.error("Erro ao buscar pokemons:", error);
   }
 }
 
-async function getFilteredPokemon(tipoSelecionado, pokemonAmount = 10){
-
+async function getFilteredPokemon(tipoSelecionado, offset = 10){
     try {
-      const response = await fetchPokemonData(`${BASE_URL}/type/${tipoSelecionado}`);
+      const response = await axios.get(
+        `${BASE_URL}/type/${tipoSelecionado}?limit=10?offset=${offset}`
+      );
       const { pokemon } = response.data;
-      const urlPokemon = pokemon
-        .slice(0, pokemonAmount)
-        .map((result) => result.pokemon.url);
+      const urlPokemon = pokemon.map((result) => result.pokemon.url);
   
       const pokemonData = await Promise.all(
-        urlPokemon.map((url) => fetchPokemonData(url).then((response) => response.data))
+        urlPokemon.map((url) =>
+          axios.get(url).then((response) => response.data)
+        )
       );
   
       return pokemonData;
