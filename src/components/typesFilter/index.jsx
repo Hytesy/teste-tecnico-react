@@ -1,29 +1,30 @@
-import { useEffect, useState } from "react"
-import { getTypes } from "../../services/requestApi"
+/* eslint-disable react/prop-types */
+import React, { useEffect, useState } from "react";
+import { getTypes } from "../../services/requestApi";
 
-const TypesFilter = ({value, onChange}) => {
-    const [types, setTypes] = useState([])
+const TypesFilter = React.memo(function TypesFilter({ handleFilerChange }) {
+    // console.log("Renderizando TypesFilter"); // Adicione esta linha
+    const [types, setTypes] = useState([]);
     useEffect(() => {
         async function fetchTypes() {
-            const response = await getTypes()
-            setTypes(response)
+            const response = await getTypes();
+            setTypes(response);
         }
-        fetchTypes()
-    }, [])
-    return (
-        <select value={value} onChange={onChange}>
-            <option value=''>All</option>
-            {types.map((type, i) => {
-                if (i === types.length - 1 || i === types.length - 2) {
-                    return
-                }
-                return (
-                    <option key={i} value={type.name}>{type.name}</option>
-                )
-            }
-            )}
-        </select>
-    )
-}
+        fetchTypes();
+    }, []);
 
-export default TypesFilter
+    return (
+        <select onChange={(event) => handleFilerChange(event.target.value)}>
+            <option value="">All</option>
+            {types.map((type, index) => (
+                <option key={index} value={type.name}>
+                    {type.name}
+                </option>
+            ))}
+        </select>
+    );
+});
+
+TypesFilter.displayName = "TypesFilter";
+
+export default TypesFilter;
