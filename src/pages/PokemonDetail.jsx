@@ -1,8 +1,10 @@
 import PokemonCardDetails from "../components/pokemonCardDetails"
 
+
 const PokemonDetail = () => {
     return(
-        <PokemonCardDetails/>
+            <PokemonCardDetails/>
+
     )
 }
 

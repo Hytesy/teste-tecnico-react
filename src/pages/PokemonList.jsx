@@ -1,40 +1,52 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { getNames, getPokemon, getPokemonsPerType } from "../services/requestApi"
 import { LoadLessPokemon, LoadMorePokemon } from "../components/pokemonQuantityButtons";
 import TypesFilter from "../components/typesFilter";
 import List from "../components/pokemonList";
 import { Footer, Header } from "../components/HeadFooter";
+import { ButtonsMoreLess, Page } from "./PageStyled";
+import { ThemeContext } from "../themes/contextTheme";
 
 const PokemonList = () => {
   const counter = 10
   const [pokemonList, setPokemonList] = useState()
   const [pokemonCount, setPokemonCount] = useState(counter)
   const [filter, setFilter] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { theme } = useContext(ThemeContext)
 
   useEffect(() => {
     async function fetchData() {
-      const listName = await getNames(pokemonCount)
-      const pokemons = await getPokemon(listName)
-      setPokemonList(pokemons)
+      setLoading(true)
+      try {
+        const listName = await getNames(pokemonCount)
+        const pokemons = await getPokemon(listName)
+        setPokemonList(pokemons)
+      } catch (error) {
+        console.error("Erro ao buscar dados", error)
+      } finally {
+        setLoading(false)
+      }
     }
-      fetchData()
- 
-  }, [pokemonCount])
-  
-  useEffect(() => {
     async function fetchFiltredData(type) {
-      const listName = await getPokemonsPerType(type)
-      const pokemons = await getPokemon(listName)
-      setPokemonList(pokemons)
+      setLoading(true)
+      try {
+        const listName = await getPokemonsPerType(type)
+        const pokemons = await getPokemon(listName)
+        setPokemonList(pokemons)
+      } catch (error) {
+        console.error("Erro ao buscar dados filtrados", error)
+      } finally {
+        setLoading(false)
+      }
     }
     if (!filter) {
       fetchData()
     } else {
       fetchFiltredData(filter)
     }
-  }, [filter])
 
-
+  }, [pokemonCount, filter])
 
   const loadMorePokemon = () => {
     setPokemonCount(prevCount => prevCount + counter)
@@ -50,19 +62,19 @@ const PokemonList = () => {
   }
 
   return (
-    <>
+    <Page theme={theme}>
       <Header />
       <main>
         <TypesFilter value={filter} onChange={handleFilerChange} />
-        <List pokemons={pokemonList} />
-        <div>
-          <LoadLessPokemon onClick={loadLessPokemon} />
-          <LoadMorePokemon onClick={loadMorePokemon} />
-        </div>
+        <List pokemons={pokemonList} isLoading={loading}>
+          <ButtonsMoreLess>
+            <LoadLessPokemon onClick={loadLessPokemon} />
+            <LoadMorePokemon onClick={loadMorePokemon} />
+          </ButtonsMoreLess>
+        </List>
       </main>
-      <Footer/>
-
-    </>
+      <Footer />
+    </Page>
   );
 };
 

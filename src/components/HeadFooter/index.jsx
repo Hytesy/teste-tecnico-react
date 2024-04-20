@@ -3,5 +3,5 @@ export const Header = () => (
 )
 
 export const Footer = () => (
-    <h3>Create by <a>Pablo Otoboni | Hytesy</a></h3>
+    <h3>Create by <a href="https://github.com/hytesy" target="_blank">Pablo Otoboni | Hytesy</a></h3>
 )
